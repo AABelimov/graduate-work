@@ -7,6 +7,9 @@ import lombok.Data;
 @Schema(name = "Comment")
 public class CommentDto {
 
+    @Schema(description = "comment ID")
+    private Integer pk;
+
     @Schema(description = "comment author ID")
     private Integer author;
 
@@ -17,10 +20,7 @@ public class CommentDto {
     private String authorFirstName;
 
     @Schema(description = "date and time the comment was created in milliseconds since 00:00:00 01.01.1970")
-    private Integer createAt;
-
-    @Schema(description = "comment ID")
-    private Integer pk;
+    private Long createdAt;
 
     @Schema(description = "comment text")
     private String text;

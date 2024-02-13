@@ -7,14 +7,14 @@ import lombok.Data;
 @Schema(name = "Ad")
 public class AdDto {
 
+    @Schema(description = "ad ID")
+    private Integer pk;
+
     @Schema(description = "ad author ID")
     private Integer author;
 
     @Schema(description = "link to ad image")
     private String image;
-
-    @Schema(description = "ad ID")
-    private Integer pk;
 
     @Schema(description = "ad price")
     private Integer price;

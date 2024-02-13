@@ -5,12 +5,16 @@ import ru.skypro.homework.dto.ad.AdDto;
 import ru.skypro.homework.dto.ad.AdsDto;
 import ru.skypro.homework.dto.ad.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ad.ExtendedAdDto;
+import ru.skypro.homework.entity.Ad;
+import ru.skypro.homework.entity.Comment;
 
 import java.util.List;
 
 public interface AdService {
 
     AdDto createAd(CreateOrUpdateAdDto createOrUpdateAdDto, MultipartFile image);
+
+    Ad getAd(Integer id);
 
     AdsDto getAll();
 
@@ -23,4 +27,5 @@ public interface AdService {
     AdsDto getMyAds();
 
     byte[] updateAdImage(Integer id, MultipartFile image);
+
 }

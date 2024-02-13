@@ -17,8 +17,6 @@ import ru.skypro.homework.dto.ad.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ad.ExtendedAdDto;
 import ru.skypro.homework.service.AdService;
 
-import java.util.Arrays;
-
 @CrossOrigin(value = "http://localhost:3000")
 @Tag(name = "Ads")
 @RestController
