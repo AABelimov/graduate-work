@@ -1,5 +1,6 @@
 package ru.skypro.homework.mapper;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.skypro.homework.dto.auth.RegisterDto;
 import ru.skypro.homework.dto.user.UserDto;
@@ -8,15 +9,18 @@ import ru.skypro.homework.entity.User;
 @Component
 public class UserMapper {
 
+    @Value("${path.to.default.user.photo}")
+    private String photoPath;
+
     public User toEntity(RegisterDto registerDto) {
         User user = new User();
 
         user.setEmail(registerDto.getUsername());
-        user.setPassword(registerDto.getPassword()); //TODO: скорей всего нужна функция хеширования
         user.setFirstName(registerDto.getFirstName());
         user.setLastName(registerDto.getLastName());
         user.setPhone(registerDto.getPhone());
-        user.setRole(registerDto.getRole());
+        user.setRole(registerDto.getRole().name());
+        user.setAvatar(photoPath);
 
         return user;
     }
@@ -29,8 +33,8 @@ public class UserMapper {
         userDto.setFirstName(user.getFirstName());
         userDto.setLastName(user.getLastName());
         userDto.setPhone(user.getPhone());
-        userDto.setRole(user.getRole().name());
-        userDto.setImage(user.getAvatar());
+        userDto.setRole(user.getRole());
+        userDto.setImage("/" + user.getId() + "/avatar");
 
         return userDto;
     }

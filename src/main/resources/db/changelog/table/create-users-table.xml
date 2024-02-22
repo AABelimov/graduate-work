@@ -19,7 +19,7 @@
             <column name="email" type="VARCHAR(32)">
                 <constraints nullable="false"/>
             </column>
-            <column name="password" type="VARCHAR(16)">
+            <column name="password" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
             <column name="first_name" type="VARCHAR(16)">
@@ -28,14 +28,14 @@
             <column name="last_name" type="VARCHAR(16)">
                 <constraints nullable="true"/>
             </column>
-            <column name="phone" type="VARCHAR(16)">
+            <column name="phone" type="VARCHAR(32)">
                 <constraints nullable="true"/>
             </column>
             <column name="role" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
             <column name="avatar" type="VARCHAR(255)">
-                <constraints nullable="true"/>
+                <constraints nullable="false"/>
             </column>
         </createTable>
 

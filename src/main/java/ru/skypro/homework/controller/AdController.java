@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.ad.AdDto;
@@ -35,10 +36,11 @@ public class AdController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
             }
     )
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<AdDto> createAd(@RequestPart(value = "properties") CreateOrUpdateAdDto createOrUpdateAdDto,
-                                          @RequestPart(value = "image") MultipartFile image) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(adService.createAd(createOrUpdateAdDto, image));
+                                          @RequestPart(value = "image") MultipartFile image,
+                                          Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(adService.createAd(createOrUpdateAdDto, image, authentication));
     }
 
     @Operation(
@@ -79,8 +81,13 @@ public class AdController {
             }
     )
     @GetMapping("me")
-    public ResponseEntity<AdsDto> getMyAds() {
-        return ResponseEntity.ok(adService.getMyAds());
+    public ResponseEntity<AdsDto> getMyAds(Authentication authentication) {
+        return ResponseEntity.ok(adService.getMyAds(authentication));
+    }
+
+    @GetMapping(value = "{id}/image", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    public ResponseEntity<byte[]> getImage(@PathVariable Integer id) {
+        return ResponseEntity.ok(adService.getImage(id));
     }
 
     @Operation(
@@ -96,8 +103,9 @@ public class AdController {
     )
     @PatchMapping("{id}")
     public ResponseEntity<AdDto> updateAd(@PathVariable Integer id,
-                                          @RequestBody CreateOrUpdateAdDto createOrUpdateAdDto) {
-        return ResponseEntity.ok(adService.updateAd(id, createOrUpdateAdDto));
+                                          @RequestBody CreateOrUpdateAdDto createOrUpdateAdDto,
+                                          Authentication authentication) {
+        return ResponseEntity.ok(adService.updateAd(id, createOrUpdateAdDto, authentication));
     }
 
     @Operation(
@@ -111,9 +119,11 @@ public class AdController {
                     @ApiResponse(responseCode = "404", description = "Not found", content = @Content)
             }
     )
-    @PatchMapping(value = "{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<byte[]> updateAdImage(@PathVariable Integer id, @RequestParam MultipartFile image) {
-        return ResponseEntity.ok(adService.updateAdImage(id, image));
+    @PatchMapping(value = "{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    public ResponseEntity<byte[]> updateAdImage(@PathVariable Integer id,
+                                                @RequestParam MultipartFile image,
+                                                Authentication authentication) {
+        return ResponseEntity.ok(adService.updateAdImage(id, image, authentication));
     }
 
     @Operation(
@@ -126,8 +136,8 @@ public class AdController {
             }
     )
     @DeleteMapping("{id}")
-    public ResponseEntity<?> deleteAd(@PathVariable Integer id) {
-        adService.deleteAd(id);
+    public ResponseEntity<?> deleteAd(@PathVariable Integer id, Authentication authentication) {
+        adService.deleteAd(id, authentication);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

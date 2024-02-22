@@ -14,13 +14,13 @@ public class RegisterDto {
     @Schema(description = "password", minLength = 8, maxLength = 16)
     private String password;
 
-    @Schema(description = "username", minLength = 2, maxLength = 16)
+    @Schema(description = "user's first name", minLength = 2, maxLength = 16)
     private String firstName;
 
     @Schema(description = "user's last name", minLength = 2, maxLength = 16)
     private String lastName;
 
-    @Schema(description = "user phone", pattern = "\\+7\\s?\\(?\\d{3}\\)?s\\d{3}-?\\d{2}-?\\d{2}")
+    @Schema(description = "user phone", pattern = "\\+7\\s?\\(?\\d{3}\\)?s?\\d{3}-?\\d{2}-?\\d{2}")
     private String phone;
 
     @Schema(description = "user role")

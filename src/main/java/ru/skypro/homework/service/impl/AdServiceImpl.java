@@ -2,17 +2,25 @@ package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import ru.skypro.homework.dto.Role;
 import ru.skypro.homework.dto.ad.AdDto;
 import ru.skypro.homework.dto.ad.AdsDto;
 import ru.skypro.homework.dto.ad.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ad.ExtendedAdDto;
 import ru.skypro.homework.entity.Ad;
+import ru.skypro.homework.entity.User;
+import ru.skypro.homework.exception.AdNotFoundException;
+import ru.skypro.homework.exception.ForbiddenException;
+import ru.skypro.homework.exception.InvalidValueException;
 import ru.skypro.homework.mapper.AdMapper;
 import ru.skypro.homework.repository.AdRepository;
 import ru.skypro.homework.service.AdService;
+import ru.skypro.homework.service.UserService;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -28,19 +36,26 @@ public class AdServiceImpl implements AdService {
     private String photoPath;
     private final AdMapper adMapper;
     private final AdRepository adRepository;
+    private final UserService userService;
 
     @Override
-    public AdDto createAd(CreateOrUpdateAdDto createOrUpdateAdDto, MultipartFile image) {
-        Ad ad = null;
+    @Transactional
+    public AdDto createAd(CreateOrUpdateAdDto createOrUpdateAdDto, MultipartFile image, Authentication authentication) {
+        checkTitle(createOrUpdateAdDto.getTitle());
+        checkPrice(createOrUpdateAdDto.getPrice());
+        checkDescription(createOrUpdateAdDto.getDescription());
+
         try {
-            ad = saveImage(adMapper.toEntity(createOrUpdateAdDto), image);
+            Ad ad = adRepository.save(adMapper.toEntity(createOrUpdateAdDto));
+            User user = userService.getUserByEmail(authentication.getName());
+            ad.setUser(user);
+            return adMapper.toAdDto(uploadImage(ad, image));
         } catch (IOException e) {
             throw new RuntimeException(e); // TODO: todo
         }
-        return adMapper.toAdDto(ad);
     }
 
-    private Ad saveImage(Ad ad, MultipartFile image) throws IOException {
+    private Ad uploadImage(Ad ad, MultipartFile image) throws IOException {
         Path filePath = Path.of(photoPath, ad.hashCode() + "." + StringUtils.getFilenameExtension(image.getOriginalFilename()));
         Files.createDirectories(filePath.getParent());
         Files.deleteIfExists(filePath);
@@ -53,15 +68,13 @@ public class AdServiceImpl implements AdService {
         ) {
             bis.transferTo(bos);
             ad.setImage(filePath.toString());
-            adRepository.save(ad);
+            return adRepository.save(ad);
         }
-
-        return ad;
     }
 
     @Override
     public Ad getAd(Integer id) {
-        return adRepository.findById(id).orElseThrow(); // TODO: добавить исключение
+        return adRepository.findById(id).orElseThrow(() -> new AdNotFoundException(id));
     }
 
     @Override
@@ -75,34 +88,92 @@ public class AdServiceImpl implements AdService {
     }
 
     @Override
-    public void deleteAd(Integer id) {
-        Ad ad = getAd(id);
-        adRepository.delete(ad);
-    }
-
-    @Override
-    public AdDto updateAd(Integer id, CreateOrUpdateAdDto createOrUpdateAdDto) {
-        Ad ad = getAd(id);
-
-        ad.setTitle(createOrUpdateAdDto.getTitle());
-        ad.setDescription(createOrUpdateAdDto.getDescription());
-        ad.setPrice(createOrUpdateAdDto.getPrice().toString());
-
-        return adMapper.toAdDto(adRepository.save(ad));
-    }
-
-    @Override
-    public AdsDto getMyAds() {
-        return adMapper.toAdsDto(adRepository.findAllByUserId(1)); // TODO: Достать авторизованного юзера сюда
-    }
-
-    @Override
-    public byte[] updateAdImage(Integer id, MultipartFile image) {
+    public byte[] getImage(Integer id) {
         try {
-            Ad ad = saveImage(getAd(id), image);
+            Ad ad = getAd(id);
             return Files.readAllBytes(Path.of(ad.getImage()));
         } catch (IOException e) {
-            throw new RuntimeException(e); // TODO: Добавить исключение
+            throw new RuntimeException(e); // TODO: todo
+        }
+    }
+
+    @Override
+    public void deleteAd(Integer id, Authentication authentication) {
+        if (isAdminOrOwner(id, authentication)) {
+            try {
+                Ad ad = getAd(id);
+                Files.deleteIfExists(Path.of(ad.getImage()));
+                adRepository.delete(ad);
+                return;
+            } catch (IOException e) {
+                throw new RuntimeException(e); // TODO: todo
+            }
+        }
+        throw new ForbiddenException("No permission to delete this ad");
+    }
+
+    @Override
+    public AdDto updateAd(Integer id, CreateOrUpdateAdDto createOrUpdateAdDto, Authentication authentication) {
+        checkTitle(createOrUpdateAdDto.getTitle());
+        checkPrice(createOrUpdateAdDto.getPrice());
+        checkDescription(createOrUpdateAdDto.getDescription());
+
+        if (isAdminOrOwner(id, authentication)) {
+            Ad ad = getAd(id);
+
+            ad.setTitle(createOrUpdateAdDto.getTitle());
+            ad.setDescription(createOrUpdateAdDto.getDescription());
+            ad.setPrice(createOrUpdateAdDto.getPrice().toString());
+
+            return adMapper.toAdDto(adRepository.save(ad));
+        }
+        throw new ForbiddenException("No permission to edit this ad");
+    }
+
+    @Override
+    public AdsDto getMyAds(Authentication authentication) {
+        User user = userService.getUserByEmail(authentication.getName());
+        return adMapper.toAdsDto(adRepository.findAllByUserIdOrderByPk(user.getId()));
+    }
+
+    @Override
+    public byte[] updateAdImage(Integer id, MultipartFile image, Authentication authentication) {
+        if (isAdminOrOwner(id, authentication)) {
+            try {
+                Ad ad = getAd(id);
+                ad = uploadImage(ad, image);
+                return Files.readAllBytes(Path.of(ad.getImage()));
+            } catch (IOException e) {
+                throw new RuntimeException(e); // TODO: Добавить исключение
+            }
+        }
+        throw new ForbiddenException("No permission to update this image");
+    }
+
+    private boolean isAdminOrOwner(Integer id, Authentication authentication) {
+        Ad ad = getAd(id);
+        User user = userService.getUserByEmail(authentication.getName());
+        return user.equals(ad.getUser()) || user.getRole().equals(Role.ADMIN.toString());
+    }
+
+    private void checkTitle(String title) {
+        if (title.length() < 4 || title.length() > 32) {
+            throw new InvalidValueException("Title length must be from 4 to 32");
+        }
+    }
+
+    private void checkPrice(Integer price) {
+        if (price < 0) {
+            throw new InvalidValueException("Price can't be below zero");
+        }
+        if (price > 10_000_000) {
+            throw new InvalidValueException("Maximum price is 10.000.000");
+        }
+    }
+
+    private void checkDescription(String description) {
+        if (description.length() < 8 || description.length() > 64) {
+            throw new InvalidValueException("Title length must be from 8 to 64");
         }
     }
 }

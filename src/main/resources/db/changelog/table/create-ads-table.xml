@@ -20,7 +20,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="image" type="VARCHAR(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
             <column name="description" type="VARCHAR(64)">
                 <constraints nullable="false"/>
@@ -29,7 +29,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="user_id" type="INT">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
         </createTable>
 

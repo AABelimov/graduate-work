@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.user.NewPasswordDto;
@@ -33,8 +34,9 @@ public class UserController {
             }
     )
     @PostMapping("set_password")
-    public ResponseEntity<?> setUserPassword(@RequestBody NewPasswordDto newPasswordDto) {
-        userService.setUserPassword(newPasswordDto);
+    public ResponseEntity<?> updateUserPassword(@RequestBody NewPasswordDto newPasswordDto,
+                                                Authentication authentication) {
+        userService.updateUserPassword(newPasswordDto, authentication);
         return ResponseEntity.ok().build();
     }
 
@@ -48,8 +50,13 @@ public class UserController {
             }
     )
     @GetMapping("me")
-    public ResponseEntity<UserDto> getUserInfo() {
-        return ResponseEntity.ok(userService.getUserInfo());
+    public ResponseEntity<UserDto> getUserInfo(Authentication authentication) {
+        return ResponseEntity.ok(userService.getUserInfo(authentication));
+    }
+
+    @GetMapping(value = "{id}/avatar", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    public ResponseEntity<byte[]> getAvatar(@PathVariable Integer id) {
+        return ResponseEntity.ok(userService.getAvatar(id));
     }
 
     @Operation(
@@ -62,8 +69,8 @@ public class UserController {
             }
     )
     @PatchMapping("me")
-    public ResponseEntity<UpdateUserDto> updateUserInfo(@RequestBody UpdateUserDto updateUserDto) {
-        return ResponseEntity.ok(userService.updateUserInfo(updateUserDto));
+    public ResponseEntity<UpdateUserDto> updateUserInfo(@RequestBody UpdateUserDto updateUserDto, Authentication authentication) {
+        return ResponseEntity.ok(userService.updateUserInfo(updateUserDto, authentication));
     }
 
     @Operation(
@@ -74,8 +81,8 @@ public class UserController {
             }
     )
     @PatchMapping(value = "me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateUserAvatar(@RequestParam MultipartFile image) {
-        userService.updateUseAvatar(image);
+    public ResponseEntity<?> updateUserAvatar(@RequestParam MultipartFile image, Authentication authentication) {
+        userService.updateUserAvatar(image, authentication);
         return ResponseEntity.ok().build();
     }
 

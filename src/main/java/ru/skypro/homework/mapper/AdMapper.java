@@ -7,7 +7,6 @@ import ru.skypro.homework.dto.ad.AdsDto;
 import ru.skypro.homework.dto.ad.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ad.ExtendedAdDto;
 import ru.skypro.homework.entity.Ad;
-import ru.skypro.homework.repository.AdRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,8 +14,6 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class AdMapper {
-
-    private final AdRepository adRepository;
 
     public Ad toEntity(CreateOrUpdateAdDto createOrUpdateAdDto) {
         Ad ad = new Ad();
@@ -33,8 +30,8 @@ public class AdMapper {
 
         adDto.setPk(ad.getPk());
         adDto.setAuthor(ad.getUser().getId());
-        adDto.setImage(ad.getImage());
-        adDto.setPrice(Integer.getInteger(ad.getPrice()));
+        adDto.setImage("/" + ad.getPk() + "/image");
+        adDto.setPrice(Integer.parseInt(ad.getPrice()));
         adDto.setTitle(ad.getTitle());
 
         return adDto;
@@ -60,9 +57,9 @@ public class AdMapper {
         extendedAdDto.setAuthorLastName(ad.getUser().getLastName());
         extendedAdDto.setDescription(ad.getDescription());
         extendedAdDto.setEmail(ad.getUser().getEmail());
-        extendedAdDto.setImage(ad.getImage());
+        extendedAdDto.setImage("/" + ad.getPk() + "/image");
         extendedAdDto.setPhone(ad.getUser().getPhone());
-        extendedAdDto.setPrice(Integer.getInteger(ad.getPrice()));
+        extendedAdDto.setPrice(Integer.parseInt(ad.getPrice()));
         extendedAdDto.setTitle(ad.getTitle());
 
         return extendedAdDto;
