@@ -17,11 +17,11 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer pk;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Ad ad;
     private String text;
     private Long createdAt;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private User user;
 }

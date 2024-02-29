@@ -34,7 +34,7 @@ public class UserMapper {
         userDto.setLastName(user.getLastName());
         userDto.setPhone(user.getPhone());
         userDto.setRole(user.getRole());
-        userDto.setImage("/" + user.getId() + "/avatar");
+        userDto.setImage("/users/" + user.getId() + "/avatar");
 
         return userDto;
     }

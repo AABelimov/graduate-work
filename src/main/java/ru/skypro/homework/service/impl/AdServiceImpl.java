@@ -55,36 +55,25 @@ public class AdServiceImpl implements AdService {
         }
     }
 
-    private Ad uploadImage(Ad ad, MultipartFile image) throws IOException {
-        Path filePath = Path.of(photoPath, ad.hashCode() + "." + StringUtils.getFilenameExtension(image.getOriginalFilename()));
-        Files.createDirectories(filePath.getParent());
-        Files.deleteIfExists(filePath);
-
-        try (
-                InputStream is = image.getInputStream();
-                OutputStream os = Files.newOutputStream(filePath, CREATE_NEW);
-                BufferedInputStream bis = new BufferedInputStream(is, 1024);
-                BufferedOutputStream bos = new BufferedOutputStream(os, 1024)
-        ) {
-            bis.transferTo(bos);
-            ad.setImage(filePath.toString());
-            return adRepository.save(ad);
-        }
-    }
-
     @Override
     public Ad getAd(Integer id) {
         return adRepository.findById(id).orElseThrow(() -> new AdNotFoundException(id));
     }
 
     @Override
-    public AdsDto getAll() {
-        return adMapper.toAdsDto(adRepository.findAll());
+    public ExtendedAdDto getInfoAboutAd(Integer id) {
+        return adMapper.toExtendedAdDto(getAd(id));
     }
 
     @Override
-    public ExtendedAdDto getInfoAboutAd(Integer id) {
-        return adMapper.toExtendedAdDto(getAd(id));
+    public AdsDto getMyAds(Authentication authentication) {
+        User user = userService.getUserByEmail(authentication.getName());
+        return adMapper.toAdsDto(adRepository.findAllByUserIdOrderByPk(user.getId()));
+    }
+
+    @Override
+    public AdsDto getAll() {
+        return adMapper.toAdsDto(adRepository.findAll());
     }
 
     @Override
@@ -95,21 +84,6 @@ public class AdServiceImpl implements AdService {
         } catch (IOException e) {
             throw new RuntimeException(e); // TODO: todo
         }
-    }
-
-    @Override
-    public void deleteAd(Integer id, Authentication authentication) {
-        if (isAdminOrOwner(id, authentication)) {
-            try {
-                Ad ad = getAd(id);
-                Files.deleteIfExists(Path.of(ad.getImage()));
-                adRepository.delete(ad);
-                return;
-            } catch (IOException e) {
-                throw new RuntimeException(e); // TODO: todo
-            }
-        }
-        throw new ForbiddenException("No permission to delete this ad");
     }
 
     @Override
@@ -131,12 +105,6 @@ public class AdServiceImpl implements AdService {
     }
 
     @Override
-    public AdsDto getMyAds(Authentication authentication) {
-        User user = userService.getUserByEmail(authentication.getName());
-        return adMapper.toAdsDto(adRepository.findAllByUserIdOrderByPk(user.getId()));
-    }
-
-    @Override
     public byte[] updateAdImage(Integer id, MultipartFile image, Authentication authentication) {
         if (isAdminOrOwner(id, authentication)) {
             try {
@@ -148,6 +116,38 @@ public class AdServiceImpl implements AdService {
             }
         }
         throw new ForbiddenException("No permission to update this image");
+    }
+
+    @Override
+    public void deleteAd(Integer id, Authentication authentication) {
+        if (isAdminOrOwner(id, authentication)) {
+            try {
+                Ad ad = getAd(id);
+                Files.deleteIfExists(Path.of(ad.getImage()));
+                adRepository.delete(ad);
+                return;
+            } catch (IOException e) {
+                throw new RuntimeException(e); // TODO: todo
+            }
+        }
+        throw new ForbiddenException("No permission to delete this ad");
+    }
+
+    private Ad uploadImage(Ad ad, MultipartFile image) throws IOException {
+        Path filePath = Path.of(photoPath, ad.hashCode() + "." + StringUtils.getFilenameExtension(image.getOriginalFilename()));
+        Files.createDirectories(filePath.getParent());
+        Files.deleteIfExists(filePath);
+
+        try (
+                InputStream is = image.getInputStream();
+                OutputStream os = Files.newOutputStream(filePath, CREATE_NEW);
+                BufferedInputStream bis = new BufferedInputStream(is, 1024);
+                BufferedOutputStream bos = new BufferedOutputStream(os, 1024)
+        ) {
+            bis.transferTo(bos);
+            ad.setImage(filePath.toString());
+            return adRepository.save(ad);
+        }
     }
 
     private boolean isAdminOrOwner(Integer id, Authentication authentication) {

@@ -1,5 +1,6 @@
 package ru.skypro.homework.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.Collections;
 @Entity
 @Data
 @NoArgsConstructor
+//@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Table(name = "users")
 public class User implements UserDetails {

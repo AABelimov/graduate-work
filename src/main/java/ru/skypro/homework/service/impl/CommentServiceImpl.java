@@ -31,17 +31,6 @@ public class CommentServiceImpl implements CommentService {
     private final UserService userService;
 
     @Override
-    public Comment getComment(Integer commentId) {
-        return commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException(commentId));
-    }
-
-    @Override
-    public CommentsDto getComments(Integer adId) {
-        List<Comment> comments = commentRepository.findAllByAdPk(adId);
-        return commentMapper.toCommentsDto(comments);
-    }
-
-    @Override
     public CommentDto createComment(Integer adId,
                                     CreateOrUpdateCommentDto createOrUpdateCommentDto,
                                     Authentication authentication) {
@@ -55,13 +44,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void deleteComment(Integer adId, Integer commentId, Authentication authentication) {
-        if (isAdminOrOwner(commentId, authentication)) {
-            Comment comment = getComment(commentId);
-            commentRepository.delete(comment);
-            return;
-        }
-        throw new ForbiddenException("No permission to delete this comment");
+    public Comment getComment(Integer commentId) {
+        return commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException(commentId));
+    }
+
+    @Override
+    public CommentsDto getComments(Integer adId) {
+        List<Comment> comments = commentRepository.findAllByAdPk(adId);
+        return commentMapper.toCommentsDto(comments);
     }
 
     @Override
@@ -76,6 +66,16 @@ public class CommentServiceImpl implements CommentService {
             return commentMapper.toCommentDto(commentRepository.save(comment));
         }
         throw new ForbiddenException("No permission to edit this comment");
+    }
+
+    @Override
+    public void deleteComment(Integer adId, Integer commentId, Authentication authentication) {
+        if (isAdminOrOwner(commentId, authentication)) {
+            Comment comment = getComment(commentId);
+            commentRepository.delete(comment);
+            return;
+        }
+        throw new ForbiddenException("No permission to delete this comment");
     }
 
     private boolean isAdminOrOwner(Integer commentId, Authentication authentication) {

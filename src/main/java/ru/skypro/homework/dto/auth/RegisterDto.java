@@ -1,10 +1,12 @@
 package ru.skypro.homework.dto.auth;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.skypro.homework.dto.Role;
 
 @Data
+@AllArgsConstructor
 @Schema(name = "Register")
 public class RegisterDto {
 

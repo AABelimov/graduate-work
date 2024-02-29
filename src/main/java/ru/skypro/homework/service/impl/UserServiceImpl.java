@@ -41,18 +41,28 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder encoder;
 
     @Override
-    public void updateUserPassword(NewPasswordDto newPasswordDto, Authentication authentication) {
-        User user = null;
-
-        checkPassword(newPasswordDto.getNewPassword());
-        user = getUserByEmail(authentication.getName());
-
-        if (encoder.matches(newPasswordDto.getCurrentPassword(), user.getPassword())) {
-            user.setPassword(encoder.encode(newPasswordDto.getNewPassword()));
+    public void createUser(RegisterDto registerDto) {
+        if (registrationDataIsCorrect(registerDto)) {
+            User user = userMapper.toEntity(registerDto);
+            String password = encoder.encode(registerDto.getPassword());
+            user.setPassword(password);
             userRepository.save(user);
-        } else {
-            throw new ForbiddenException("Incorrect current password");
         }
+    }
+
+    @Override
+    public boolean existsByEmail(String username) {
+        return userRepository.existsByEmail(username);
+    }
+
+    @Override
+    public User getUser(Integer id) {
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    @Override
+    public User getUserByEmail(String userName) {
+        return userRepository.findByEmail(userName).orElse(null);
     }
 
     @Override
@@ -62,17 +72,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUser(Integer id) {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
-    }
-
-    @Override
     public byte[] getAvatar(Integer id) {
         try {
             User user = getUser(id);
             return Files.readAllBytes(Path.of(user.getAvatar()));
         } catch (IOException e) {
             throw new RuntimeException(e); // TODO: todo
+        }
+    }
+
+    @Override
+    public void updateUserPassword(NewPasswordDto newPasswordDto, Authentication authentication) {
+        checkPassword(newPasswordDto.getNewPassword());
+        User user = getUserByEmail(authentication.getName());
+
+        if (encoder.matches(newPasswordDto.getCurrentPassword(), user.getPassword())) {
+            user.setPassword(encoder.encode(newPasswordDto.getNewPassword()));
+            userRepository.save(user);
+        } else {
+            throw new ForbiddenException("Incorrect current password");
         }
     }
 
@@ -121,26 +139,6 @@ public class UserServiceImpl implements UserService {
             user.setAvatar(filepath.toString());
             userRepository.save(user);
         }
-    }
-
-    @Override
-    public boolean existsByEmail(String username) {
-        return userRepository.existsByEmail(username);
-    }
-
-    @Override
-    public void createUser(RegisterDto registerDto) {
-        if (registrationDataIsCorrect(registerDto)) {
-            User user = userMapper.toEntity(registerDto);
-            String password = encoder.encode(registerDto.getPassword());
-            user.setPassword(password);
-            userRepository.save(user);
-        }
-    }
-
-    @Override
-    public User getUserByEmail(String userName) {
-        return userRepository.findByEmail(userName).orElse(null);
     }
 
     private boolean registrationDataIsCorrect(RegisterDto registerDto) {

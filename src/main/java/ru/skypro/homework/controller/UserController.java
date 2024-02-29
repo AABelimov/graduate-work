@@ -54,6 +54,15 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserInfo(authentication));
     }
 
+    @Operation(
+            summary = "Get user avatar",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = byte[].class))),
+                    @ApiResponse(responseCode = "404", description = "Not found", content = @Content)
+            }
+    )
     @GetMapping(value = "{id}/avatar", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
     public ResponseEntity<byte[]> getAvatar(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.getAvatar(id));

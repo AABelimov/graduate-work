@@ -14,18 +14,18 @@ public interface AdService {
 
     Ad getAd(Integer id);
 
-    AdsDto getAll();
-
     ExtendedAdDto getInfoAboutAd(Integer id);
-
-    byte[] getImage(Integer id);
-
-    void deleteAd(Integer id, Authentication authentication);
-
-    AdDto updateAd(Integer id, CreateOrUpdateAdDto createOrUpdateAdDto, Authentication authentication);
 
     AdsDto getMyAds(Authentication authentication);
 
+    AdsDto getAll();
+
+    byte[] getImage(Integer id);
+
+    AdDto updateAd(Integer id, CreateOrUpdateAdDto createOrUpdateAdDto, Authentication authentication);
+
     byte[] updateAdImage(Integer id, MultipartFile image, Authentication authentication);
+
+    void deleteAd(Integer id, Authentication authentication);
 
 }

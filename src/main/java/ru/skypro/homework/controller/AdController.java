@@ -85,6 +85,15 @@ public class AdController {
         return ResponseEntity.ok(adService.getMyAds(authentication));
     }
 
+    @Operation(
+            summary = "Get ad picture",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = byte[].class))),
+                    @ApiResponse(responseCode = "404", description = "Not found", content = @Content)
+            }
+    )
     @GetMapping(value = "{id}/image", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
     public ResponseEntity<byte[]> getImage(@PathVariable Integer id) {
         return ResponseEntity.ok(adService.getImage(id));

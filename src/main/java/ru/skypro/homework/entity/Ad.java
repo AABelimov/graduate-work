@@ -21,7 +21,7 @@ public class Ad {
     private String description;
     private String price;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private User user;
 
 }

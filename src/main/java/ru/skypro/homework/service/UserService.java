@@ -9,21 +9,21 @@ import ru.skypro.homework.dto.user.UserDto;
 import ru.skypro.homework.entity.User;
 
 public interface UserService {
-    void updateUserPassword(NewPasswordDto newPasswordDto, Authentication authentication);
+    void createUser(RegisterDto registerDto);
 
-    UserDto getUserInfo(Authentication authentication);
+    boolean existsByEmail(String username);
 
     User getUser(Integer id);
 
+    User getUserByEmail(String userName);
+
+    UserDto getUserInfo(Authentication authentication);
+
     byte[] getAvatar(Integer id);
+
+    void updateUserPassword(NewPasswordDto newPasswordDto, Authentication authentication);
 
     UpdateUserDto updateUserInfo(UpdateUserDto updateUserDto, Authentication authentication);
 
     void updateUserAvatar(MultipartFile image, Authentication authentication);
-
-    boolean existsByEmail(String username);
-
-    void createUser(RegisterDto registerDto);
-
-    User getUserByEmail(String userName);
 }
