@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.Role;
@@ -39,7 +38,6 @@ public class AdServiceImpl implements AdService {
     private final UserService userService;
 
     @Override
-    @Transactional
     public AdDto createAd(CreateOrUpdateAdDto createOrUpdateAdDto, MultipartFile image, Authentication authentication) {
         checkTitle(createOrUpdateAdDto.getTitle());
         checkPrice(createOrUpdateAdDto.getPrice());
@@ -51,7 +49,7 @@ public class AdServiceImpl implements AdService {
             ad.setUser(user);
             return adMapper.toAdDto(uploadImage(ad, image));
         } catch (IOException e) {
-            throw new RuntimeException(e); // TODO: todo
+            throw new RuntimeException(e);
         }
     }
 
@@ -82,7 +80,7 @@ public class AdServiceImpl implements AdService {
             Ad ad = getAd(id);
             return Files.readAllBytes(Path.of(ad.getImage()));
         } catch (IOException e) {
-            throw new RuntimeException(e); // TODO: todo
+            throw new RuntimeException(e);
         }
     }
 
@@ -112,7 +110,7 @@ public class AdServiceImpl implements AdService {
                 ad = uploadImage(ad, image);
                 return Files.readAllBytes(Path.of(ad.getImage()));
             } catch (IOException e) {
-                throw new RuntimeException(e); // TODO: Добавить исключение
+                throw new RuntimeException(e);
             }
         }
         throw new ForbiddenException("No permission to update this image");
@@ -127,7 +125,7 @@ public class AdServiceImpl implements AdService {
                 adRepository.delete(ad);
                 return;
             } catch (IOException e) {
-                throw new RuntimeException(e); // TODO: todo
+                throw new RuntimeException(e);
             }
         }
         throw new ForbiddenException("No permission to delete this ad");
