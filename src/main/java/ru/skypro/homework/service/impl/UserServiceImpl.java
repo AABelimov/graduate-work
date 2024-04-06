@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
             User user = getUser(id);
             return Files.readAllBytes(Path.of(user.getAvatar()));
         } catch (IOException e) {
-            throw new RuntimeException(e); // TODO: todo
+            throw new RuntimeException(e);
         }
     }
 
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UpdateUserDto updateUserInfo(UpdateUserDto updateUserDto, Authentication authentication) {
-        User user = null;
+        User user;
         String firstName = updateUserDto.getFirstName();
         String lastName = updateUserDto.getLastName();
         String phone = updateUserDto.getPhone();
@@ -120,7 +120,7 @@ public class UserServiceImpl implements UserService {
             User user = getUserByEmail(authentication.getName());
             uploadAvatar(user, avatar);
         } catch (IOException e) {
-            throw new RuntimeException(e); // TODO: todo
+            throw new RuntimeException(e);
         }
     }
 
